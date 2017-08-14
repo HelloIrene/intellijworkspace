@@ -19,7 +19,6 @@ public class Client {
             dis.close();
             dos.close();
             socket.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
