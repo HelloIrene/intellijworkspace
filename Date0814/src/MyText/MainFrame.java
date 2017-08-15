@@ -1,10 +1,14 @@
 package MyText;
 
+
 import javax.swing.*;
+import javax.swing.text.StringContent;
 import java.awt.*;
+import java.awt.datatransfer.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.*;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,6 +32,8 @@ public class MainFrame extends JFrame {
     private JLabel timeStatusBar;
     private JTextArea jTextArea;
     private JScrollPane scrollPane;
+
+    private Clipboard clipboard;
 
     public MainFrame() {
         this.iniFrame();
@@ -163,7 +169,141 @@ public class MainFrame extends JFrame {
     private void setAction(JMenuItem menuItem, String jMenuItemName) {
         if (jMenuItemName.equals("关于记事本")) {
             this.iniCopyRightInf(menuItem);
+            return;
+        } else if (jMenuItemName.equals("打开")) {
+            this.iniOpenMenuItem(menuItem);
+            return;
+        } else if (jMenuItemName.equals("另存为")) {
+            this.iniSaveAsMenuItem(menuItem);
+            return;
+        } else if (jMenuItemName.equals("粘贴")) {
+            this.iniPasteMenuItem(menuItem);
+            return;
+        }else if (jMenuItemName.equals("复制")) {
+            this.iniCopyMenuItem(menuItem);
+            return;
+        }else if (jMenuItemName.equals("剪切")) {
+            this.iniCutMenuItem(menuItem);
+            return;
+        }else if (jMenuItemName.equals("删除")) {
+            this.iniDelMenuItem(menuItem);
+            return;
+        }else if (jMenuItemName.equals("全选")) {
+            this.iniSelAllMenuItem(menuItem);
+            return;
         }
+    }
+
+    private void iniSelAllMenuItem(JMenuItem menuItem){
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jTextArea.selectAll();
+            }
+        });
+    }
+    private void iniDelMenuItem(JMenuItem jMenuItem){
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jTextArea.replaceSelection("");
+            }
+        });
+    }
+    private void iniCutMenuItem(JMenuItem menuItem){
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                StringSelection stringSelection=new StringSelection(jTextArea.getSelectedText());
+                clipboard.setContents(stringSelection,null);
+                jTextArea.replaceSelection("");
+            }
+        });
+    }
+
+    private void iniCopyMenuItem(JMenuItem jMenuItem) {
+        clipboard = getToolkit().getSystemClipboard();
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                StringSelection stringSelection=new StringSelection(jTextArea.getSelectedText());
+                clipboard.setContents(stringSelection,null);
+            }
+        });
+    }
+
+    private void iniPasteMenuItem(JMenuItem MenuItem) {
+        clipboard = getToolkit().getSystemClipboard();
+        MenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Transferable clipT = clipboard.getContents(this);
+                if (clipT != null) {
+                    // 检查内容是否是文本类型
+                    if (clipT.isDataFlavorSupported(DataFlavor.stringFlavor))
+                        try {
+                            int n = jTextArea.getCaretPosition();
+                            String str = (String) clipT.getTransferData(DataFlavor.stringFlavor);
+                            jTextArea.insert(str, n);
+                            return;
+                        } catch (UnsupportedFlavorException e1) {
+                            e1.printStackTrace();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                }
+            }
+        });
+    }
+
+    private void iniOpenMenuItem(JMenuItem MenuItem) {
+        MenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jFileChooser = new JFileChooser();
+                jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int rst = jFileChooser.showOpenDialog(MainFrame.this);
+                File file = jFileChooser.getSelectedFile();
+                if (rst == JFileChooser.APPROVE_OPTION) {
+                    try {
+                        FileReader fr = new FileReader(file);
+                        BufferedReader br = new BufferedReader(fr);
+                        String s = br.readLine();
+                        StringBuffer sb = new StringBuffer();
+                        while (s != null) {
+                            sb.append(s);
+                            sb.append(System.getProperty("line.separator"));
+                            s = br.readLine();
+                        }
+                        jTextArea.setText(sb.toString());
+                        br.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private void iniSaveAsMenuItem(JMenuItem jMenuItem) {
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String str = jTextArea.getText();
+                JFileChooser jfc = new JFileChooser();
+                jfc.showSaveDialog(MainFrame.this);
+                try {
+                    File file = jfc.getSelectedFile();
+                    FileWriter fw = new FileWriter(file);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    bw.write(str);
+                    bw.flush();
+                    bw.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
     }
 
     private void iniCopyRightInf(JMenuItem menuItem) {
@@ -188,7 +328,6 @@ public class MainFrame extends JFrame {
                 return;
             }
         });
-
     }
 
     private void iniAutoWrap(JCheckBoxMenuItem jCheckBoxMenuItem) {
@@ -208,7 +347,7 @@ public class MainFrame extends JFrame {
     //初始化窗口
     private void iniFrame() {
         Toolkit kit = Toolkit.getDefaultToolkit();
-        Image img = kit.getImage("img/notepad_32px.png");
+        Image img = kit.getImage("img/Notepad_48px.png");
         this.setSize(390, 520);
         this.setLocationRelativeTo(null);
         this.setTitle("记事本");
