@@ -167,6 +167,10 @@ public class MainFrame extends JFrame {
     }
 
     private void setAction(JMenuItem menuItem, String jMenuItemName) {
+//        switch(menuItem){
+//            case "关于记事本" :
+//                temp=;
+//        }
         if (jMenuItemName.equals("关于记事本")) {
             this.iniCopyRightInf(menuItem);
             return;
@@ -179,22 +183,36 @@ public class MainFrame extends JFrame {
         } else if (jMenuItemName.equals("粘贴")) {
             this.iniPasteMenuItem(menuItem);
             return;
-        }else if (jMenuItemName.equals("复制")) {
+        } else if (jMenuItemName.equals("复制")) {
             this.iniCopyMenuItem(menuItem);
             return;
-        }else if (jMenuItemName.equals("剪切")) {
+        } else if (jMenuItemName.equals("剪切")) {
             this.iniCutMenuItem(menuItem);
             return;
-        }else if (jMenuItemName.equals("删除")) {
+        } else if (jMenuItemName.equals("删除")) {
             this.iniDelMenuItem(menuItem);
             return;
-        }else if (jMenuItemName.equals("全选")) {
+        } else if (jMenuItemName.equals("全选")) {
             this.iniSelAllMenuItem(menuItem);
+            return;
+        } else if(jMenuItemName.equals("日期/时间")){
+            this.soutTime(menuItem);
             return;
         }
     }
 
-    private void iniSelAllMenuItem(JMenuItem menuItem){
+    private void soutTime(JMenuItem jMenuItem){
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int n = jTextArea.getCaretPosition();
+                jTextArea.insert(new Date().toString(), n);
+                return;
+            }
+        });
+    }
+
+    private void iniSelAllMenuItem(JMenuItem menuItem) {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -202,7 +220,8 @@ public class MainFrame extends JFrame {
             }
         });
     }
-    private void iniDelMenuItem(JMenuItem jMenuItem){
+
+    private void iniDelMenuItem(JMenuItem jMenuItem) {
         jMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -210,12 +229,14 @@ public class MainFrame extends JFrame {
             }
         });
     }
-    private void iniCutMenuItem(JMenuItem menuItem){
+
+    private void iniCutMenuItem(JMenuItem menuItem) {
+        clipboard = getToolkit().getSystemClipboard();
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                StringSelection stringSelection=new StringSelection(jTextArea.getSelectedText());
-                clipboard.setContents(stringSelection,null);
+                StringSelection stringSelection = new StringSelection(jTextArea.getSelectedText());
+                clipboard.setContents(stringSelection, null);
                 jTextArea.replaceSelection("");
             }
         });
@@ -226,8 +247,8 @@ public class MainFrame extends JFrame {
         jMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                StringSelection stringSelection=new StringSelection(jTextArea.getSelectedText());
-                clipboard.setContents(stringSelection,null);
+                StringSelection stringSelection = new StringSelection(jTextArea.getSelectedText());
+                clipboard.setContents(stringSelection, null);
             }
         });
     }
