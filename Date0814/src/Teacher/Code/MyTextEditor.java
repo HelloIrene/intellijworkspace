@@ -51,7 +51,7 @@ public class MyTextEditor extends JFrame {
 
 	private void initControls() {
 		txt = new JTextArea();
-		txt.setLineWrap(true); // 自动换行
+		txt.setLineWrap(false); // 自动换行
 		scrollPane = new JScrollPane(txt);
 		// scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		// scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);

@@ -1,16 +1,22 @@
 package MyText;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
- * 2017年8月14日
+ * start 2017年8月14日
  *
  * @author student Ross
  */
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
 
-public class mainFrame extends JFrame {
+public class MainFrame extends JFrame {
     public StringBuffer jMenuItemName = new StringBuffer();
     private JMenuBar bar;
     private JMenu menuFile;
@@ -18,20 +24,36 @@ public class mainFrame extends JFrame {
     private JMenu menuFormat;
     private JMenu menuCheck;
     private JMenu menuHelp;
-    private JPanel body;
+    private JPanel showTime;
+    private JLabel timeStatusBar;
     private JTextArea jTextArea;
+    private JScrollPane scrollPane;
 
-    public mainFrame() {
+    public MainFrame() {
         this.iniFrame();
         this.iniJMenuBar();
-        jTextArea = new JTextArea();
+        showTime = new JPanel(new BorderLayout());
         this.setJMenuBar(bar);
-        this.add(jTextArea,BorderLayout.CENTER);
+        this.iniJTextArea();
+        iniStatusBar();
+        this.add(showTime, BorderLayout.SOUTH);
     }
 
-//    private void iniJTextArea(){
-//        JTextArea jTextArea = new JTextArea();
-//    }
+    private void iniStatusBar() {
+        timeStatusBar = new JLabel();
+        Timer t = new Timer(true);
+        MyTask task = new MyTask();
+        t.schedule(task, 1000, 1000);
+        showTime.add(timeStatusBar, BorderLayout.SOUTH);
+    }
+
+    private void iniJTextArea() {
+        jTextArea = new JTextArea();
+        jTextArea.setLineWrap(false);
+        scrollPane = new JScrollPane(jTextArea);
+        this.add(scrollPane);
+    }
+
     //设定菜单栏
     private void iniJMenuBar() {
         bar = new JMenuBar();
@@ -53,29 +75,28 @@ public class mainFrame extends JFrame {
         menuHelp.setMnemonic('H');
         menuHelp.add(this.setJMenuItem("查看帮助", 'H'));
         menuHelp.addSeparator();
-        JMenuItem temp=this.setJMenuItem("关于记事本", 'A');
-        temp.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainFrame.this,
-                        "<html><br></br><p><font size=\"4\">Copyright&copy; 2017 Ross .All rights reserved.&emsp;&emsp;</font></p><br></br><html>");
-            }
-        });
-        menuHelp.add(temp);
+        menuHelp.add(this.setJMenuItem("关于记事本", 'A'));
     }
 
     //设置查看菜单
     private void setJMenuCheck() {
         menuCheck = new JMenu("查看(V)");
         menuCheck.setMnemonic('V');
-        menuCheck.add(this.setJMenuItem("状态栏", 'S'));
+        JCheckBoxMenuItem jCheckBoxMenuItem = new JCheckBoxMenuItem("状态栏(S)");
+        jCheckBoxMenuItem.setMnemonic('s');
+        jCheckBoxMenuItem.setSelected(true);
+        this.iniStatuInf(jCheckBoxMenuItem);
+        menuCheck.add(jCheckBoxMenuItem);
     }
 
     //设置格式菜单
     private void setJMenuFormat() {
         menuFormat = new JMenu("格式(O)");
         menuFormat.setMnemonic('O');
-        menuFormat.add(this.setJMenuItem("自动换行", 'W'));
+        JCheckBoxMenuItem jCheckBoxMenuItem = new JCheckBoxMenuItem("自动换行(W)");
+        jCheckBoxMenuItem.setMnemonic('W');
+        this.iniAutoWrap(jCheckBoxMenuItem);
+        menuFormat.add(jCheckBoxMenuItem);
         menuFormat.add(this.setJMenuItem("字体", 'F'));
     }
 
@@ -120,6 +141,7 @@ public class mainFrame extends JFrame {
         jMenuItemName.append(")");
         JMenuItem jMenuItem = new JMenuItem(jMenuItemName.toString());
         jMenuItem.setMnemonic(shortcuts);
+        this.setAction(jMenuItem, name);
         jMenuItemName.setLength(0);
         return jMenuItem;
     }
@@ -138,6 +160,51 @@ public class mainFrame extends JFrame {
         return jMenuItem;
     }
 
+    private void setAction(JMenuItem menuItem, String jMenuItemName) {
+        if (jMenuItemName.equals("关于记事本")) {
+            this.iniCopyRightInf(menuItem);
+        }
+    }
+
+    private void iniCopyRightInf(JMenuItem menuItem) {
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(MainFrame.this,
+                        "<html><br></br><p><font size=\"4\">Copyright&copy; 2017 Ross .All rights reserved.&emsp;&emsp;</font></p><br></br><html>");
+            }
+        });
+    }
+
+    private void iniStatuInf(JCheckBoxMenuItem jCheckBoxMenuItem) {
+        jCheckBoxMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (jCheckBoxMenuItem.isSelected()) {
+                    showTime.setVisible(true);
+                    return;
+                }
+                showTime.setVisible(false);
+                return;
+            }
+        });
+
+    }
+
+    private void iniAutoWrap(JCheckBoxMenuItem jCheckBoxMenuItem) {
+        jCheckBoxMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (jCheckBoxMenuItem.isSelected()) {
+                    jTextArea.setLineWrap(true);
+                    return;
+                }
+                jTextArea.setLineWrap(false);
+                return;
+            }
+        });
+    }
+
     //初始化窗口
     private void iniFrame() {
         Toolkit kit = Toolkit.getDefaultToolkit();
@@ -149,8 +216,15 @@ public class mainFrame extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public static void main(String[] args) {
-        mainFrame mFrame = new mainFrame();
-        mFrame.setVisible(true);
+    private class MyTask extends TimerTask {
+
+        @Override
+        public void run() {
+            timeStatusBar.setText(new Date().toString());
+            System.gc();
+        }
+
     }
 }
+
+
