@@ -16,7 +16,6 @@ import java.util.TimerTask;
  * @author student Ross
  */
 
-
 public class MainFrame extends JFrame {
     public StringBuffer jMenuItemName = new StringBuffer();
     private JMenuBar bar;
@@ -62,7 +61,7 @@ public class MainFrame extends JFrame {
         this.add(scrollPane);
     }
 
-    private void iniJPopUpMenu(){
+    private void iniJPopUpMenu() {
         jPopupMenu = new JPopupMenu();
         jPopupMenu.add(this.setJMenuItem("撤销", 'U', KeyEvent.VK_Z));
         jPopupMenu.addSeparator();
@@ -70,10 +69,12 @@ public class MainFrame extends JFrame {
         jPopupMenu.add(this.setJMenuItem("复制", 'C', KeyEvent.VK_C));
         jPopupMenu.add(this.setJMenuItem("粘贴", 'P', KeyEvent.VK_V));
         jPopupMenu.add(this.setJMenuItem("删除", 'L', "DELETE"));
+        jPopupMenu.addSeparator();
+        jPopupMenu.add(this.setJMenuItem("全选", 'A', KeyEvent.VK_A));
         this.settingRightClick();
     }
 
-    private void settingRightClick(){
+    private void settingRightClick() {
         jTextArea.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger())// 返回此鼠标事件是否为该平台的弹出菜单触发事件
@@ -82,7 +83,6 @@ public class MainFrame extends JFrame {
                     // X、Y
                     // 显示弹出菜单
                 }
-                //checkMenuItemEnabled();// 设置剪切，复制，粘帖，删除等功能的可用性
                 jPopupMenu.requestFocus();// 编辑区获取焦点
             }
 
@@ -93,11 +93,11 @@ public class MainFrame extends JFrame {
                     // X、Y
                     // 显示弹出菜单
                 }
-                //checkMenuItemEnabled();// 设置剪切，复制，粘帖，删除等功能的可用性
                 jPopupMenu.requestFocus();// 编辑区获取焦点
             }
         });// 文
     }
+
     //设定菜单栏
     private void iniJMenuBar() {
         bar = new JMenuBar();
@@ -142,6 +142,7 @@ public class MainFrame extends JFrame {
         this.iniAutoWrap(jCheckBoxMenuItem);
         menuFormat.add(jCheckBoxMenuItem);
         menuFormat.add(this.setJMenuItem("字体", 'F'));
+        menuFormat.add(this.setJMenuItem("修改背景", 'C'));
     }
 
     //设置编辑菜单
@@ -239,7 +240,22 @@ public class MainFrame extends JFrame {
             case "字体":
                 this.settingFont(menuItem);
                 return;
+            case "修改背景":
+                this.changeBGC(menuItem);
+                return;
+            default:
+                return;
         }
+    }
+
+    private void changeBGC(JMenuItem jMenuItem) {
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Color c = JColorChooser.showDialog(MainFrame.this, "选择颜色", Color.BLACK);
+                jTextArea.setBackground(c);
+            }
+        });
     }
 
     private void settingFont(JMenuItem jMenuItem) {
