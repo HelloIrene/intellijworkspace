@@ -1,4 +1,4 @@
-package Notepad;
+package MyText;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

@@ -1,13 +1,10 @@
 package MyText;
 
-
 import javax.swing.*;
-import javax.swing.text.StringContent;
+import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.datatransfer.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.util.Date;
 import java.util.Timer;
@@ -32,17 +29,22 @@ public class MainFrame extends JFrame {
     private JLabel timeStatusBar;
     private JTextArea jTextArea;
     private JScrollPane scrollPane;
+    private JPopupMenu jPopupMenu;
 
     private Clipboard clipboard;
+    private UndoManager undomg = new UndoManager();
 
     public MainFrame() {
+        jTextArea = new JTextArea();
         this.iniFrame();
         this.iniJMenuBar();
         showTime = new JPanel(new BorderLayout());
         this.setJMenuBar(bar);
+        this.iniJPopUpMenu();
         this.iniJTextArea();
         iniStatusBar();
         this.add(showTime, BorderLayout.SOUTH);
+        this.iniJPopUpMenu();
     }
 
     private void iniStatusBar() {
@@ -54,12 +56,48 @@ public class MainFrame extends JFrame {
     }
 
     private void iniJTextArea() {
-        jTextArea = new JTextArea();
+        jTextArea.getDocument().addUndoableEditListener(undomg);
         jTextArea.setLineWrap(false);
         scrollPane = new JScrollPane(jTextArea);
         this.add(scrollPane);
     }
 
+    private void iniJPopUpMenu(){
+        jPopupMenu = new JPopupMenu();
+        jPopupMenu.add(this.setJMenuItem("撤销", 'U', KeyEvent.VK_Z));
+        jPopupMenu.addSeparator();
+        jPopupMenu.add(this.setJMenuItem("剪切", 'T', KeyEvent.VK_X));
+        jPopupMenu.add(this.setJMenuItem("复制", 'C', KeyEvent.VK_C));
+        jPopupMenu.add(this.setJMenuItem("粘贴", 'P', KeyEvent.VK_V));
+        jPopupMenu.add(this.setJMenuItem("删除", 'L', "DELETE"));
+        this.settingRightClick();
+    }
+
+    private void settingRightClick(){
+        jTextArea.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger())// 返回此鼠标事件是否为该平台的弹出菜单触发事件
+                {
+                    jPopupMenu.show(e.getComponent(), e.getX(), e.getY());// 在组件调用者的坐标空间中的位置
+                    // X、Y
+                    // 显示弹出菜单
+                }
+                //checkMenuItemEnabled();// 设置剪切，复制，粘帖，删除等功能的可用性
+                jPopupMenu.requestFocus();// 编辑区获取焦点
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger())// 返回此鼠标事件是否为该平台的弹出菜单触发事件
+                {
+                    jPopupMenu.show(e.getComponent(), e.getX(), e.getY());// 在组件调用者的坐标空间中的位置
+                    // X、Y
+                    // 显示弹出菜单
+                }
+                //checkMenuItemEnabled();// 设置剪切，复制，粘帖，删除等功能的可用性
+                jPopupMenu.requestFocus();// 编辑区获取焦点
+            }
+        });// 文
+    }
     //设定菜单栏
     private void iniJMenuBar() {
         bar = new JMenuBar();
@@ -167,41 +205,76 @@ public class MainFrame extends JFrame {
     }
 
     private void setAction(JMenuItem menuItem, String jMenuItemName) {
-//        switch(menuItem){
-//            case "关于记事本" :
-//                temp=;
-//        }
-        if (jMenuItemName.equals("关于记事本")) {
-            this.iniCopyRightInf(menuItem);
-            return;
-        } else if (jMenuItemName.equals("打开")) {
-            this.iniOpenMenuItem(menuItem);
-            return;
-        } else if (jMenuItemName.equals("另存为")) {
-            this.iniSaveAsMenuItem(menuItem);
-            return;
-        } else if (jMenuItemName.equals("粘贴")) {
-            this.iniPasteMenuItem(menuItem);
-            return;
-        } else if (jMenuItemName.equals("复制")) {
-            this.iniCopyMenuItem(menuItem);
-            return;
-        } else if (jMenuItemName.equals("剪切")) {
-            this.iniCutMenuItem(menuItem);
-            return;
-        } else if (jMenuItemName.equals("删除")) {
-            this.iniDelMenuItem(menuItem);
-            return;
-        } else if (jMenuItemName.equals("全选")) {
-            this.iniSelAllMenuItem(menuItem);
-            return;
-        } else if(jMenuItemName.equals("日期/时间")){
-            this.soutTime(menuItem);
-            return;
+        switch (jMenuItemName) {
+            case "关于记事本":
+                this.iniCopyRightInf(menuItem);
+                return;
+            case "打开":
+                this.iniOpenMenuItem(menuItem);
+                return;
+            case "另存为":
+                this.iniSaveAsMenuItem(menuItem);
+                return;
+            case "粘贴":
+                this.iniPasteMenuItem(menuItem);
+                return;
+            case "复制":
+                this.iniCopyMenuItem(menuItem);
+                return;
+            case "剪切":
+                this.iniCutMenuItem(menuItem);
+                return;
+            case "删除":
+                this.iniDelMenuItem(menuItem);
+                return;
+            case "全选":
+                this.iniSelAllMenuItem(menuItem);
+                return;
+            case "日期/时间":
+                this.soutTime(menuItem);
+                return;
+            case "撤销":
+                this.settingUndomg(menuItem);
+                return;
+            case "字体":
+                this.settingFont(menuItem);
+                return;
         }
     }
 
-    private void soutTime(JMenuItem jMenuItem){
+    private void settingFont(JMenuItem jMenuItem) {
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MyFontChooser fontChooser = new MyFontChooser(jTextArea.getFont());
+                // 打开一个字体选择器窗口，参数为父级所有者窗体。返回一个整型，代表设置字体时按下了确定或是取消，可参考MQFontChooser.APPROVE_OPTION和MQFontChooser.CANCEL_OPTION
+                int returnValue = fontChooser.showFontDialog(MainFrame.this);
+                // 如果按下的是确定按钮
+                if (returnValue == MyFontChooser.APPROVE_OPTION) {
+                    Font font = fontChooser.getSelectFont(); // 获取选择的字体
+                    // 将字体设置到JTextArea中
+                    jTextArea.setFont(font);
+                }
+            }
+        });
+    }
+
+    private void settingUndomg(JMenuItem jMenuItem) {
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (undomg.canUndo()) {
+                    undomg.undo();
+                    return;
+                } else {
+                    JOptionPane.showMessageDialog(null, "无法撤销", "警告", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            }
+        });
+    }
+
+    private void soutTime(JMenuItem jMenuItem) {
         jMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
