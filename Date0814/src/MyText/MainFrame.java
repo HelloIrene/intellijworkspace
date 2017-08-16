@@ -31,6 +31,7 @@ public class MainFrame extends JFrame {
     private JScrollPane scrollPane;
     private JPopupMenu jPopupMenu;
     private String path;
+    private String content = "";
 
     private Clipboard clipboard;
     private UndoManager undomg = new UndoManager();
@@ -252,14 +253,15 @@ public class MainFrame extends JFrame {
             case "新建":
                 this.create(menuItem);
                 return;
-            case"退出":
+            case "退出":
                 this.exitjMenuItem(menuItem);
                 return;
             default:
                 return;
         }
     }
-private void exitjMenuItem(JMenuItem jMenuItem){
+
+    private void exitjMenuItem(JMenuItem jMenuItem) {
         jMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -267,7 +269,7 @@ private void exitjMenuItem(JMenuItem jMenuItem){
                 System.exit(0);
             }
         });
-}
+    }
 
     private void saveFile(JMenuItem jMenuItem) {
         jMenuItem.addActionListener(new ActionListener() {
@@ -284,6 +286,7 @@ private void exitjMenuItem(JMenuItem jMenuItem){
                         bw.write(str);
                         bw.flush();
                         bw.close();
+                        content = str;
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -451,6 +454,7 @@ private void exitjMenuItem(JMenuItem jMenuItem){
                         }
                         jTextArea.setText(sb.toString());
                         br.close();
+                        content = sb.toString();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -506,7 +510,7 @@ private void exitjMenuItem(JMenuItem jMenuItem){
         });
     }
 
-    private void saveFileBody(){
+    private void saveFileBody() {
         String str = jTextArea.getText();
         JFileChooser jfc = new JFileChooser();
         jfc.showSaveDialog(MainFrame.this);
@@ -520,6 +524,7 @@ private void exitjMenuItem(JMenuItem jMenuItem){
             bw.close();
             MainFrame.this.setTitle(title);
             path = file.getAbsolutePath();
+            content = str;
         } catch (IOException e1) {
             e1.printStackTrace();
         }
@@ -583,22 +588,26 @@ private void exitjMenuItem(JMenuItem jMenuItem){
         }
     }
 
-    private void exitWaring(){
+    private void exitWaring() {
+        if (jTextArea.getText().equals(content)) {
+            System.exit(0);
+            return;
+        }
         int result = JOptionPane.showConfirmDialog(MainFrame.this, "内容未保存，要保存后再退出?", "Confirm",
                 JOptionPane.YES_NO_CANCEL_OPTION);
         if (result == JOptionPane.YES_OPTION) {
             MainFrame.this.saveFileBody();
             MainFrame.this.saveFrameSize();
-            System.exit(0) ;
+            System.exit(0);
         } else if (result == JOptionPane.NO_OPTION) {
             MainFrame.this.saveFrameSize();
-            System.exit(0) ;
+            System.exit(0);
         }
     }
 
     private class ExitClick extends WindowAdapter {
         public void windowClosing(WindowEvent e) {
-           MainFrame.this.exitWaring();
+            MainFrame.this.exitWaring();
         }
     }
 }
