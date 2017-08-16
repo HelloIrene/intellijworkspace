@@ -7,6 +7,7 @@ import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Date;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -29,6 +30,7 @@ public class MainFrame extends JFrame {
     private JTextArea jTextArea;
     private JScrollPane scrollPane;
     private JPopupMenu jPopupMenu;
+    private String path;
 
     private Clipboard clipboard;
     private UndoManager undomg = new UndoManager();
@@ -243,9 +245,69 @@ public class MainFrame extends JFrame {
             case "修改背景":
                 this.changeBGC(menuItem);
                 return;
+            case "保存":
+                this.saveFile(menuItem);
+                return;
+            case "新建":
+                this.create(menuItem);
+                return;
             default:
                 return;
         }
+    }
+
+    private void saveFile(JMenuItem jMenuItem) {
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (path == null) {
+                    // 没有新建文件的情况下，保存和另存为一样
+                    String str = jTextArea.getText();
+                    JFileChooser jfc = new JFileChooser();
+                    jfc.showSaveDialog(MainFrame.this);
+                    File file = jfc.getSelectedFile();
+                    try {
+                        FileWriter fw = new FileWriter(file);
+                        BufferedWriter bw = new BufferedWriter(fw);
+                        bw.write(str);
+                        bw.flush();
+                        bw.close();
+                        path = file.getAbsolutePath();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                } else {//在已经有个新建文件的情况下，保存与另存为的区别是：保存相当于覆盖了之前已有的文件
+                    File file = new File(path);
+                    String str = jTextArea.getText();
+                    try {
+                        FileWriter fw = new FileWriter(file);
+                        BufferedWriter bw = new BufferedWriter(fw);
+                        bw.write(str);
+                        bw.flush();
+                        bw.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+
+                }
+            }
+        });
+    }
+
+    private void create(JMenuItem jMenuItem) {
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (jTextArea.getText().equals("")) {
+                    jTextArea.setText("");
+                    return;
+                }
+                int result = JOptionPane.showConfirmDialog(MainFrame.this, "文件未保存，是否继续");
+                if (result == JOptionPane.YES_OPTION) {
+                    jTextArea.setText("");
+                }
+            }
+        });
     }
 
     private void changeBGC(JMenuItem jMenuItem) {
@@ -376,6 +438,9 @@ public class MainFrame extends JFrame {
                 File file = jFileChooser.getSelectedFile();
                 if (rst == JFileChooser.APPROVE_OPTION) {
                     try {
+                        String title = file.getName();
+                        MainFrame.this.setTitle(title);
+                        path = file.getAbsolutePath();
                         FileReader fr = new FileReader(file);
                         BufferedReader br = new BufferedReader(fr);
                         String s = br.readLine();
@@ -404,11 +469,14 @@ public class MainFrame extends JFrame {
                 jfc.showSaveDialog(MainFrame.this);
                 try {
                     File file = jfc.getSelectedFile();
+                    String title = file.getName();
                     FileWriter fw = new FileWriter(file);
                     BufferedWriter bw = new BufferedWriter(fw);
                     bw.write(str);
                     bw.flush();
                     bw.close();
+                    MainFrame.this.setTitle(title);
+                    path = file.getAbsolutePath();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -454,25 +522,94 @@ public class MainFrame extends JFrame {
         });
     }
 
+    //保存窗体大小信息
+    private void saveFrameSize() {
+        Properties properties = new Properties();
+        properties.setProperty("JFrameX", String.valueOf(this.getX()));
+        properties.setProperty("JFrameY", String.valueOf(this.getY()));
+        properties.setProperty("JFrameWidth", String.valueOf(this.getWidth()));
+        properties.setProperty("JFrameHeight", String.valueOf(this.getHeight()));
+        try {
+            FileWriter fw = new FileWriter("src/JFrameY.properties");
+            properties.store(fw, "JFrame Info");
+            fw.close();
+            return;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return;
+    }
+
+    private void setFrameSize(File file) {
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileReader(file));
+            int x = Integer.parseInt(String.valueOf(properties.get("JFrameX")));
+            int y = Integer.parseInt(String.valueOf(properties.get("JFrameY")));
+            int w = Integer.parseInt(String.valueOf(properties.get("JFrameWidth")));
+            int h = Integer.parseInt(String.valueOf(properties.get("JFrameHeight")));
+            this.setBounds(x, y, w, h);
+            return;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return;
+    }
+
     //初始化窗口
     private void iniFrame() {
         Toolkit kit = Toolkit.getDefaultToolkit();
         Image img = kit.getImage("img/Notepad_48px.png");
-        this.setSize(390, 520);
-        this.setLocationRelativeTo(null);
         this.setTitle("记事本");
         this.setIconImage(img);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new ExitClick());
+        File file = new File("src/JFrameY.properties");
+        if (file.exists()) {
+            this.setFrameSize(file);
+            return;
+        }
+        this.setSize(390, 520);
+        this.setLocationRelativeTo(null);
     }
 
     private class MyTask extends TimerTask {
-
         @Override
         public void run() {
             timeStatusBar.setText(new Date().toString());
             System.gc();
         }
+    }
 
+    private class ExitClick extends WindowAdapter {
+        public void windowClosing(WindowEvent e) {
+            int result = JOptionPane.showConfirmDialog(MainFrame.this, "内容未保存，要保存后再退出?", "Confirm",
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            if (result == JOptionPane.YES_OPTION) {
+                String str = jTextArea.getText();
+                JFileChooser jfc = new JFileChooser();
+                jfc.showSaveDialog(MainFrame.this);
+                try {
+                    File file = jfc.getSelectedFile();
+                    String title = file.getName();
+                    FileWriter fw = new FileWriter(file);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    bw.write(str);
+                    bw.flush();
+                    bw.close();
+                    MainFrame.this.setTitle(title);
+                    path = file.getAbsolutePath();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                MainFrame.this.saveFrameSize();
+                MainFrame.this.dispose(); // 关闭窗口
+            } else if (result == JOptionPane.NO_OPTION) {
+                MainFrame.this.saveFrameSize();
+                MainFrame.this.dispose();
+
+            }
+        }
     }
 }
 
