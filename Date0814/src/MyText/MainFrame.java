@@ -261,21 +261,7 @@ public class MainFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (path == null) {
-                    // 没有新建文件的情况下，保存和另存为一样
-                    String str = jTextArea.getText();
-                    JFileChooser jfc = new JFileChooser();
-                    jfc.showSaveDialog(MainFrame.this);
-                    File file = jfc.getSelectedFile();
-                    try {
-                        FileWriter fw = new FileWriter(file);
-                        BufferedWriter bw = new BufferedWriter(fw);
-                        bw.write(str);
-                        bw.flush();
-                        bw.close();
-                        path = file.getAbsolutePath();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+                    MainFrame.this.saveFileBody();
                 } else {//在已经有个新建文件的情况下，保存与另存为的区别是：保存相当于覆盖了之前已有的文件
                     File file = new File(path);
                     String str = jTextArea.getText();
@@ -464,22 +450,7 @@ public class MainFrame extends JFrame {
         jMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String str = jTextArea.getText();
-                JFileChooser jfc = new JFileChooser();
-                jfc.showSaveDialog(MainFrame.this);
-                try {
-                    File file = jfc.getSelectedFile();
-                    String title = file.getName();
-                    FileWriter fw = new FileWriter(file);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    bw.write(str);
-                    bw.flush();
-                    bw.close();
-                    MainFrame.this.setTitle(title);
-                    path = file.getAbsolutePath();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                MainFrame.this.saveFileBody();
             }
         });
     }
@@ -522,6 +493,25 @@ public class MainFrame extends JFrame {
         });
     }
 
+    private void saveFileBody(){
+        String str = jTextArea.getText();
+        JFileChooser jfc = new JFileChooser();
+        jfc.showSaveDialog(MainFrame.this);
+        try {
+            File file = jfc.getSelectedFile();
+            String title = file.getName();
+            FileWriter fw = new FileWriter(file);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(str);
+            bw.flush();
+            bw.close();
+            MainFrame.this.setTitle(title);
+            path = file.getAbsolutePath();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
     //保存窗体大小信息
     private void saveFrameSize() {
         Properties properties = new Properties();
@@ -562,7 +552,7 @@ public class MainFrame extends JFrame {
         Image img = kit.getImage("img/Notepad_48px.png");
         this.setTitle("记事本");
         this.setIconImage(img);
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        //);this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE
         this.addWindowListener(new ExitClick());
         File file = new File("src/JFrameY.properties");
         if (file.exists()) {
@@ -586,28 +576,14 @@ public class MainFrame extends JFrame {
             int result = JOptionPane.showConfirmDialog(MainFrame.this, "内容未保存，要保存后再退出?", "Confirm",
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                String str = jTextArea.getText();
-                JFileChooser jfc = new JFileChooser();
-                jfc.showSaveDialog(MainFrame.this);
-                try {
-                    File file = jfc.getSelectedFile();
-                    String title = file.getName();
-                    FileWriter fw = new FileWriter(file);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    bw.write(str);
-                    bw.flush();
-                    bw.close();
-                    MainFrame.this.setTitle(title);
-                    path = file.getAbsolutePath();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                MainFrame.this.saveFileBody();
                 MainFrame.this.saveFrameSize();
-                MainFrame.this.dispose(); // 关闭窗口
+                MainFrame.this.dispose();// 关闭窗口
+                System.exit(0) ;
             } else if (result == JOptionPane.NO_OPTION) {
                 MainFrame.this.saveFrameSize();
                 MainFrame.this.dispose();
-
+                System.exit(0) ;
             }
         }
     }
