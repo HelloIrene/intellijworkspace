@@ -1,4 +1,4 @@
-package MyText;
+package MyTest2;
 
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
@@ -18,7 +18,7 @@ import java.util.TimerTask;
  * @author student Ross
  */
 
-public class MainFrame extends JFrame {
+public class MyTextFrame extends JFrame {
     public StringBuffer jMenuItemName = new StringBuffer();
     private JMenuBar bar;
     private JMenu menuFile;
@@ -37,7 +37,7 @@ public class MainFrame extends JFrame {
     private Clipboard clipboard;
     private UndoManager undomg = new UndoManager();
 
-    public MainFrame() {
+    public MyTextFrame() {
         jTextArea = new JTextArea();
         this.iniFrame();
         this.iniJMenuBar();
@@ -191,7 +191,7 @@ public class MainFrame extends JFrame {
         jMenuItemName.append(")");
         JMenuItem jMenuItem = new JMenuItem(jMenuItemName.toString());
         jMenuItem.setMnemonic(shortcuts);
-        this.setAction(jMenuItem, name);
+        this.settingActionListener(jMenuItem, name);
         jMenuItemName.setLength(0);
         return jMenuItem;
     }
@@ -210,282 +210,191 @@ public class MainFrame extends JFrame {
         return jMenuItem;
     }
 
-    private void setAction(JMenuItem menuItem, String jMenuItemName) {
-        switch (jMenuItemName) {
-            case "关于记事本":
-                this.iniCopyRightInf(menuItem);
-                return;
-            case "打开":
-                this.iniOpenMenuItem(menuItem);
-                return;
-            case "另存为":
-                this.iniSaveAsMenuItem(menuItem);
-                return;
-            case "粘贴":
-                this.iniPasteMenuItem(menuItem);
-                return;
-            case "复制":
-                this.iniCopyMenuItem(menuItem);
-                return;
-            case "剪切":
-                this.iniCutMenuItem(menuItem);
-                return;
-            case "删除":
-                this.iniDelMenuItem(menuItem);
-                return;
-            case "全选":
-                this.iniSelAllMenuItem(menuItem);
-                return;
-            case "日期/时间":
-                this.soutTime(menuItem);
-                return;
-            case "撤销":
-                this.settingUndomg(menuItem);
-                return;
-            case "字体":
-                this.settingFont(menuItem);
-                return;
-            case "修改背景":
-                this.changeBGC(menuItem);
-                return;
-            case "保存":
-                this.saveFile(menuItem);
-                return;
-            case "新建":
-                this.create(menuItem);
-                return;
-            case "退出":
-                this.exitjMenuItem(menuItem);
-                return;
-            default:
-                return;
+    private void settingActionListener(JMenuItem menuItem, String jMenuItemName) {
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switch (jMenuItemName) {
+                    case "关于记事本":
+                        JOptionPane.showMessageDialog(MyTextFrame.this,
+                                "<html><br></br><p><font size=\"4\">Copyright&copy; 2017 Ross .All rights reserved.&emsp;&emsp;</font></p><br></br><html>");
+                        return;
+                    case "打开":
+                        MyTextFrame.this.iniOpenMenuItem();
+                        return;
+                    case "另存为":
+                        MyTextFrame.this.saveFileBody();
+                        return;
+                    case "粘贴":
+                        MyTextFrame.this.iniPasteMenuItem();
+                        return;
+                    case "复制":
+                        MyTextFrame.this.iniCopyMenuItem();
+                        return;
+                    case "剪切":
+                        MyTextFrame.this.iniCutMenuItem();
+                        return;
+                    case "删除":
+                        jTextArea.replaceSelection("");
+                        return;
+                    case "全选":
+                        jTextArea.selectAll();
+                        return;
+                    case "日期/时间":
+                        MyTextFrame.this.soutTime();
+                        return;
+                    case "撤销":
+                        MyTextFrame.this.settingUndomg();
+                        return;
+                    case "字体":
+                        MyTextFrame.this.settingFont();
+                        return;
+                    case "修改背景":
+                        MyTextFrame.this.changeBGC();
+                        return;
+                    case "保存":
+                        MyTextFrame.this.saveFile();
+                        return;
+                    case "新建":
+                        MyTextFrame.this.create();
+                        return;
+                    case "退出":
+                        MyTextFrame.this.exitWaring();
+                        return;
+                    default:
+                        MyTextFrame.this.warning();
+                        return;
+                }
+            }
+        });
+    }
+
+    private void saveFile() {
+        if (path == null) {
+            MyTextFrame.this.saveFileBody();
+        } else {//在已经有个新建文件的情况下，保存与另存为的区别是：保存相当于覆盖了之前已有的文件
+            File file = new File(path);
+            String str = jTextArea.getText();
+            try {
+                FileWriter fw = new FileWriter(file);
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write(str);
+                bw.flush();
+                bw.close();
+                content = str;
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
-    private void exitjMenuItem(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MainFrame.this.exitWaring();
-            }
-        });
+    private void create() {
+        if (jTextArea.getText().equals(content)) {
+            jTextArea.setText("");
+            return;
+        }
+        int result = JOptionPane.showConfirmDialog(MyTextFrame.this, "文件未保存，是否继续", "Warning", JOptionPane.YES_NO_CANCEL_OPTION);
+        if (result == JOptionPane.YES_OPTION) {
+            jTextArea.setText("");
+            return;
+        } else if (result == JOptionPane.NO_OPTION) {
+            MyTextFrame.this.saveFileBody();
+            jTextArea.setText("");
+            MyTextFrame.this.setTitle("记事本");
+            return;
+        }
     }
 
-    private void saveFile(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (path == null) {
-                    MainFrame.this.saveFileBody();
-                } else {//在已经有个新建文件的情况下，保存与另存为的区别是：保存相当于覆盖了之前已有的文件
-                    File file = new File(path);
-                    String str = jTextArea.getText();
-                    try {
-                        FileWriter fw = new FileWriter(file);
-                        BufferedWriter bw = new BufferedWriter(fw);
-                        bw.write(str);
-                        bw.flush();
-                        bw.close();
-                        content = str;
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-
-                }
-            }
-        });
+    private void changeBGC() {
+        Color c = JColorChooser.showDialog(MyTextFrame.this, "选择颜色", Color.BLACK);
+        jTextArea.setBackground(c);
     }
 
-    private void create(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (jTextArea.getText().equals(content)) {
-                    jTextArea.setText("");
-                    return;
-                }
-                int result = JOptionPane.showConfirmDialog(MainFrame.this, "文件未保存，是否继续", "Warning", JOptionPane.YES_NO_CANCEL_OPTION);
-                if (result == JOptionPane.YES_OPTION) {
-                    jTextArea.setText("");
-                    return;
-                } else if (result == JOptionPane.NO_OPTION) {
-                    MainFrame.this.saveFileBody();
-                    jTextArea.setText("");
-                    MainFrame.this.setTitle("记事本");
-                    return;
-                }
-            }
-        });
+    private void settingFont() {
+        MyFontChooser fontChooser = new MyFontChooser(jTextArea.getFont());
+        // 打开一个字体选择器窗口，参数为父级所有者窗体。返回一个整型，代表设置字体时按下了确定或是取消，可参考MQFontChooser.APPROVE_OPTION和MQFontChooser.CANCEL_OPTION
+        int returnValue = fontChooser.showFontDialog(MyTextFrame.this);
+        // 如果按下的是确定按钮
+        if (returnValue == MyFontChooser.APPROVE_OPTION) {
+            Font font = fontChooser.getSelectFont(); // 获取选择的字体
+            // 将字体设置到JTextArea中
+            jTextArea.setFont(font);
+        }
     }
 
-    private void changeBGC(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Color c = JColorChooser.showDialog(MainFrame.this, "选择颜色", Color.BLACK);
-                jTextArea.setBackground(c);
-            }
-        });
+    private void settingUndomg() {
+        if (undomg.canUndo()) {
+            undomg.undo();
+            return;
+        } else {
+            JOptionPane.showMessageDialog(null, "无法撤销", "警告", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
     }
 
-    private void settingFont(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MyFontChooser fontChooser = new MyFontChooser(jTextArea.getFont());
-                // 打开一个字体选择器窗口，参数为父级所有者窗体。返回一个整型，代表设置字体时按下了确定或是取消，可参考MQFontChooser.APPROVE_OPTION和MQFontChooser.CANCEL_OPTION
-                int returnValue = fontChooser.showFontDialog(MainFrame.this);
-                // 如果按下的是确定按钮
-                if (returnValue == MyFontChooser.APPROVE_OPTION) {
-                    Font font = fontChooser.getSelectFont(); // 获取选择的字体
-                    // 将字体设置到JTextArea中
-                    jTextArea.setFont(font);
-                }
-            }
-        });
+    private void soutTime() {
+        int n = jTextArea.getCaretPosition();
+        jTextArea.insert(new Date().toString(), n);
+        return;
     }
 
-    private void settingUndomg(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (undomg.canUndo()) {
-                    undomg.undo();
-                    return;
-                } else {
-                    JOptionPane.showMessageDialog(null, "无法撤销", "警告", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-            }
-        });
+    private void iniCutMenuItem() {
+        MyTextFrame.this.iniCopyMenuItem();
+        jTextArea.replaceSelection("");
     }
 
-    private void soutTime(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int n = jTextArea.getCaretPosition();
-                jTextArea.insert(new Date().toString(), n);
-                return;
-            }
-        });
-    }
-
-    private void iniSelAllMenuItem(JMenuItem menuItem) {
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                jTextArea.selectAll();
-            }
-        });
-    }
-
-    private void iniDelMenuItem(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                jTextArea.replaceSelection("");
-            }
-        });
-    }
-
-    private void iniCutMenuItem(JMenuItem menuItem) {
+    private void iniCopyMenuItem() {
         clipboard = getToolkit().getSystemClipboard();
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                StringSelection stringSelection = new StringSelection(jTextArea.getSelectedText());
-                clipboard.setContents(stringSelection, null);
-                jTextArea.replaceSelection("");
-            }
-        });
+        StringSelection stringSelection = new StringSelection(jTextArea.getSelectedText());
+        clipboard.setContents(stringSelection, null);
     }
 
-    private void iniCopyMenuItem(JMenuItem jMenuItem) {
+    private void iniPasteMenuItem() {
         clipboard = getToolkit().getSystemClipboard();
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                StringSelection stringSelection = new StringSelection(jTextArea.getSelectedText());
-                clipboard.setContents(stringSelection, null);
-            }
-        });
-    }
-
-    private void iniPasteMenuItem(JMenuItem MenuItem) {
-        clipboard = getToolkit().getSystemClipboard();
-        MenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Transferable clipT = clipboard.getContents(this);
-                if (clipT != null) {
-                    // 检查内容是否是文本类型
-                    if (clipT.isDataFlavorSupported(DataFlavor.stringFlavor))
-                        try {
-                            int n = jTextArea.getCaretPosition();
-                            String str = (String) clipT.getTransferData(DataFlavor.stringFlavor);
-                            jTextArea.insert(str, n);
-                            return;
-                        } catch (UnsupportedFlavorException e1) {
-                            e1.printStackTrace();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
+        Transferable clipT = clipboard.getContents(this);
+        if (clipT != null) {
+            // 检查内容是否是文本类型
+            if (clipT.isDataFlavorSupported(DataFlavor.stringFlavor))
+                try {
+                    int n = jTextArea.getCaretPosition();
+                    String str = (String) clipT.getTransferData(DataFlavor.stringFlavor);
+                    jTextArea.insert(str, n);
+                    return;
+                } catch (UnsupportedFlavorException e1) {
+                    e1.printStackTrace();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
-            }
-        });
+        }
     }
 
-    private void iniOpenMenuItem(JMenuItem MenuItem) {
-        MenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser jFileChooser = new JFileChooser();
-                jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                int rst = jFileChooser.showOpenDialog(MainFrame.this);
-                File file = jFileChooser.getSelectedFile();
-                if (rst == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        String title = file.getName();
-                        MainFrame.this.setTitle(title);
-                        path = file.getAbsolutePath();
-                        FileReader fr = new FileReader(file);
-                        BufferedReader br = new BufferedReader(fr);
-                        String s = br.readLine();
-                        StringBuffer sb = new StringBuffer();
-                        while (s != null) {
-                            sb.append(s);
-                            sb.append(System.getProperty("line.separator"));
-                            s = br.readLine();
-                        }
-                        jTextArea.setText(sb.toString());
-                        br.close();
-                        content = sb.toString();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+    private void iniOpenMenuItem() {
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int rst = jFileChooser.showOpenDialog(MyTextFrame.this);
+        File file = jFileChooser.getSelectedFile();
+        if (rst == JFileChooser.APPROVE_OPTION) {
+            try {
+                String title = file.getName();
+                MyTextFrame.this.setTitle(title);
+                path = file.getAbsolutePath();
+                FileReader fr = new FileReader(file);
+                BufferedReader br = new BufferedReader(fr);
+                String s = br.readLine();
+                StringBuffer sb = new StringBuffer();
+                while (s != null) {
+                    sb.append(s);
+                    sb.append(System.getProperty("line.separator"));
+                    s = br.readLine();
                 }
+                jTextArea.setText(sb.toString());
+                br.close();
+                content = sb.toString();
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
-        });
-    }
-
-    private void iniSaveAsMenuItem(JMenuItem jMenuItem) {
-        jMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MainFrame.this.saveFileBody();
-            }
-        });
-    }
-
-    private void iniCopyRightInf(JMenuItem menuItem) {
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(MainFrame.this,
-                        "<html><br></br><p><font size=\"4\">Copyright&copy; 2017 Ross .All rights reserved.&emsp;&emsp;</font></p><br></br><html>");
-            }
-        });
+        }
     }
 
     private void iniStatuInf(JCheckBoxMenuItem jCheckBoxMenuItem) {
@@ -519,7 +428,7 @@ public class MainFrame extends JFrame {
     private void saveFileBody() {
         String str = jTextArea.getText();
         JFileChooser jfc = new JFileChooser();
-        jfc.showSaveDialog(MainFrame.this);
+        jfc.showSaveDialog(MyTextFrame.this);
         try {
             File file = jfc.getSelectedFile();
             String title = file.getName();
@@ -528,7 +437,7 @@ public class MainFrame extends JFrame {
             bw.write(str);
             bw.flush();
             bw.close();
-            MainFrame.this.setTitle(title);
+            MyTextFrame.this.setTitle(title);
             path = file.getAbsolutePath();
             content = str;
         } catch (IOException e1) {
@@ -537,7 +446,7 @@ public class MainFrame extends JFrame {
     }
 
     private void warning() {
-        JOptionPane.showMessageDialog(MainFrame.this, "Waiting for Versions 2.0!", "Versions 1.0", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(MyTextFrame.this, "Waiting for Versions 2.0 !", "Versions 1.0", JOptionPane.WARNING_MESSAGE);
     }
 
     //保存窗体大小信息
@@ -548,7 +457,7 @@ public class MainFrame extends JFrame {
         properties.setProperty("JFrameWidth", String.valueOf(this.getWidth()));
         properties.setProperty("JFrameHeight", String.valueOf(this.getHeight()));
         try {
-            FileWriter fw = new FileWriter("src/JFrame.properties");
+            FileWriter fw = new FileWriter("src/JFrameInf.properties");
             properties.store(fw, "JFrame Info");
             fw.close();
             return;
@@ -564,9 +473,9 @@ public class MainFrame extends JFrame {
             properties.load(new FileReader(file));
             int x = Integer.parseInt(String.valueOf(properties.get("JFrameX")));
             int y = Integer.parseInt(String.valueOf(properties.get("JFrameY")));
-            int w = Integer.parseInt(String.valueOf(properties.get("JFrameWidth")));
-            int h = Integer.parseInt(String.valueOf(properties.get("JFrameHeight")));
-            this.setBounds(x, y, w, h);
+            int width = Integer.parseInt(String.valueOf(properties.get("JFrameWidth")));
+            int height = Integer.parseInt(String.valueOf(properties.get("JFrameHeight")));
+            this.setBounds(x, y, width, height);
             return;
         } catch (IOException e) {
             e.printStackTrace();
@@ -592,7 +501,7 @@ public class MainFrame extends JFrame {
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-        File file = new File("src/JFrame.properties");
+        File file = new File("src/JFrameInf.properties");
         if (file.exists()) {
             this.setFrameSize(file);
             return;
@@ -614,15 +523,15 @@ public class MainFrame extends JFrame {
             System.exit(0);
             return;
         }
-        int result = JOptionPane.showConfirmDialog(MainFrame.this, "内容未保存，是否保存后再退出?", "Warning",
+        int result = JOptionPane.showConfirmDialog(MyTextFrame.this, "内容未保存，是否保存后再退出?", "Warning",
                 JOptionPane.YES_NO_CANCEL_OPTION);
         if (result == JOptionPane.YES_OPTION) {
-            MainFrame.this.saveFileBody();
-            MainFrame.this.saveFrameSize();
+            MyTextFrame.this.saveFileBody();
+            MyTextFrame.this.saveFrameSize();
             System.exit(0);
             return;
         } else if (result == JOptionPane.NO_OPTION) {
-            MainFrame.this.saveFrameSize();
+            MyTextFrame.this.saveFrameSize();
             System.exit(0);
             return;
         }
@@ -630,7 +539,7 @@ public class MainFrame extends JFrame {
 
     private class ExitClick extends WindowAdapter {
         public void windowClosing(WindowEvent e) {
-            MainFrame.this.exitWaring();
+            MyTextFrame.this.exitWaring();
         }
     }
 }
