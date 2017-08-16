@@ -578,11 +578,9 @@ public class MainFrame extends JFrame {
             if (result == JOptionPane.YES_OPTION) {
                 MainFrame.this.saveFileBody();
                 MainFrame.this.saveFrameSize();
-                MainFrame.this.dispose();// ¹Ø±Õ´°¿Ú
                 System.exit(0) ;
             } else if (result == JOptionPane.NO_OPTION) {
                 MainFrame.this.saveFrameSize();
-                MainFrame.this.dispose();
                 System.exit(0) ;
             }
         }
