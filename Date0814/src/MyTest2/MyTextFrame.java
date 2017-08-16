@@ -536,7 +536,6 @@ public class MyTextFrame extends JFrame {
             return;
         }
     }
-
     private class ExitClick extends WindowAdapter {
         public void windowClosing(WindowEvent e) {
             MyTextFrame.this.exitWaring();
