@@ -177,6 +177,7 @@ public class MainFrame extends JFrame {
         menuFile.add(this.setJMenuItem("另存为", 'A'));
         menuFile.addSeparator();
         menuFile.add(this.setJMenuItem("退出", 'X'));
+        addWindowListener(new ExitClick());
     }
 
     //用重载定义三种设定菜单栏的方法
@@ -251,10 +252,22 @@ public class MainFrame extends JFrame {
             case "新建":
                 this.create(menuItem);
                 return;
+            case"退出":
+                this.exitjMenuItem(menuItem);
+                return;
             default:
                 return;
         }
     }
+private void exitjMenuItem(JMenuItem jMenuItem){
+        jMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MainFrame.this.exitWaring();
+                System.exit(0);
+            }
+        });
+}
 
     private void saveFile(JMenuItem jMenuItem) {
         jMenuItem.addActionListener(new ActionListener() {
@@ -520,7 +533,7 @@ public class MainFrame extends JFrame {
         properties.setProperty("JFrameWidth", String.valueOf(this.getWidth()));
         properties.setProperty("JFrameHeight", String.valueOf(this.getHeight()));
         try {
-            FileWriter fw = new FileWriter("src/JFrameY.properties");
+            FileWriter fw = new FileWriter("src/JFrame.properties");
             properties.store(fw, "JFrame Info");
             fw.close();
             return;
@@ -552,9 +565,8 @@ public class MainFrame extends JFrame {
         Image img = kit.getImage("img/Notepad_48px.png");
         this.setTitle("记事本");
         this.setIconImage(img);
-        //);this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE
         this.addWindowListener(new ExitClick());
-        File file = new File("src/JFrameY.properties");
+        File file = new File("src/JFrame.properties");
         if (file.exists()) {
             this.setFrameSize(file);
             return;
@@ -571,18 +583,22 @@ public class MainFrame extends JFrame {
         }
     }
 
+    private void exitWaring(){
+        int result = JOptionPane.showConfirmDialog(MainFrame.this, "内容未保存，要保存后再退出?", "Confirm",
+                JOptionPane.YES_NO_CANCEL_OPTION);
+        if (result == JOptionPane.YES_OPTION) {
+            MainFrame.this.saveFileBody();
+            MainFrame.this.saveFrameSize();
+            System.exit(0) ;
+        } else if (result == JOptionPane.NO_OPTION) {
+            MainFrame.this.saveFrameSize();
+            System.exit(0) ;
+        }
+    }
+
     private class ExitClick extends WindowAdapter {
         public void windowClosing(WindowEvent e) {
-            int result = JOptionPane.showConfirmDialog(MainFrame.this, "内容未保存，要保存后再退出?", "Confirm",
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-            if (result == JOptionPane.YES_OPTION) {
-                MainFrame.this.saveFileBody();
-                MainFrame.this.saveFrameSize();
-                System.exit(0) ;
-            } else if (result == JOptionPane.NO_OPTION) {
-                MainFrame.this.saveFrameSize();
-                System.exit(0) ;
-            }
+           MainFrame.this.exitWaring();
         }
     }
 }
