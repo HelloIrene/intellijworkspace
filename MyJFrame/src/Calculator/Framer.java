@@ -22,10 +22,8 @@ public class Framer extends JFrame {
     private JMenuItem edit;
     private JMenuItem delEdit;
     private JMenuItem del;
-
     private JPanel jPanel;
     private JTextField jTextField;
-
     private JButton btnMC;
     private JButton btnMR;
     private JButton btnMS;
