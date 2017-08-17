@@ -13,7 +13,7 @@ public class Framer extends JFrame {
     private JMenu menuEdit;
     private JMenu subMenuEdit;
     private JMenu menuHelp;
-    // ²Ëµ¥Ïî
+
     private JMenuItem copy;
     private JMenuItem paste;
     private JMenuItem help;
