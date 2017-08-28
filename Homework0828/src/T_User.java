@@ -7,14 +7,14 @@ public class T_User {
     public Date empDate;
     public double empSal;
     public double empComm;
-    public String empDepart;
+    public int empDepart;
 
     public T_User() {
 
     }
 
     public T_User(int empNo, String empName, String empJob, Date empDate,
-                  double empSal, double empComm, String empDepart) {
+                  double empSal, double empComm, int empDepart) {
         this.empNo = empNo;
         this.empName = empName;
         this.empJob = empJob;
@@ -72,11 +72,11 @@ public class T_User {
         this.empComm = empComm;
     }
 
-    public String getEmpDepart() {
+    public int getEmpDepart() {
         return empDepart;
     }
 
-    public void setEmpDepart(String empDepart) {
+    public void setEmpDepart(int empDepart) {
         this.empDepart = empDepart;
     }
 }
