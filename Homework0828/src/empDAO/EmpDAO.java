@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EmpDAO {
 
@@ -83,8 +85,35 @@ public class EmpDAO {
         return row;
     }
 }
-//    public List<String> getDepart() {
-//        List<String> departmentName = new ArrayList<>();
-//        return
-//    }
+    public List<String> getDepart() {
+        List<String> departmentName = new ArrayList<>();
+        Connection conn = null;
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            conn = DBTool.getInstance().getConnection();
+            //select ename,job,hiredate,sal,nvl(comm,0),deptno from Emp
+            //where EMPNO ='7369';
+            ps = conn.prepareStatement("SELECT deptno,de FROM Emp WHERE EMPNO=? ");
+            ps.setString(1, empNo);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                T_User user = new T_User();
+                user.setEmpName(rs.getString("ename"));
+                user.setEmpJob(rs.getString("job"));
+                user.setEmpDate(rs.getDate("hiredate"));
+                user.setEmpSal(rs.getDouble("sal"));
+                user.setEmpComm(rs.getDouble("com"));
+                user.setEmpComm(rs.getInt("deptno"));
+                return user;
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            DBTool.closeAll(rs, ps, conn);
+        }
+        System.out.println("´íÎó");
+        return null;
+    }
 //}
