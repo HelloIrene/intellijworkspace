@@ -7,8 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class EmpDAO {
 
@@ -30,7 +29,7 @@ public class EmpDAO {
                 user.setEmpDate(rs.getDate("hiredate"));
                 user.setEmpSal(rs.getDouble("sal"));
                 user.setEmpComm(rs.getDouble("com"));
-                user.setEmpComm(rs.getInt("deptno"));
+                user.setEmpDepart(rs.getInt("deptno"));
                 return user;
             }
         } catch (SQLException e) {
@@ -50,14 +49,14 @@ public class EmpDAO {
         try {
             conn = DBTool.getInstance().getConnection();
             //UPDATE Emp SET ename='SMith', job='clck' WHERE empNo='7369';
-            ps = conn.prepareStatement("UPDATE Emp SET ename=?, job=?, sal=?, comm=? WHERE empno=?");
+            ps = conn.prepareStatement("UPDATE Emp SET ename=?, job=?, sal=?, comm=?,DEPTNO=? WHERE empno=?");
             ps.setString(1, user.getEmpName());
             ps.setString(2, user.getEmpJob());
             ps.setDouble(3, user.getEmpSal());
             ps.setDouble(4, user.getEmpComm());
-            ps.setInt(5, user.getEmpNo());
+            ps.setInt(5,user.getEmpDepart());
+            ps.setInt(6, user.getEmpNo());
             row = ps.executeUpdate(); //插入数据库，返回SQL语句执行后受影响的行数
-
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -84,29 +83,21 @@ public class EmpDAO {
         }
         return row;
     }
-}
-    public List<String> getDepart() {
-        List<String> departmentName = new ArrayList<>();
+
+    public HashMap<String,Integer> getDepart() {
+        HashMap<String,Integer> departmentName = new HashMap<>();
         Connection conn = null;
         ResultSet rs = null;
         PreparedStatement ps = null;
         try {
             conn = DBTool.getInstance().getConnection();
-            //select ename,job,hiredate,sal,nvl(comm,0),deptno from Emp
-            //where EMPNO ='7369';
-            ps = conn.prepareStatement("SELECT deptno,de FROM Emp WHERE EMPNO=? ");
-            ps.setString(1, empNo);
+            //select dname,deptNo from dept;
+            ps = conn.prepareStatement("SELECT dname,deptno FROM DEPT ");
             rs = ps.executeQuery();
             while (rs.next()) {
-                T_User user = new T_User();
-                user.setEmpName(rs.getString("ename"));
-                user.setEmpJob(rs.getString("job"));
-                user.setEmpDate(rs.getDate("hiredate"));
-                user.setEmpSal(rs.getDouble("sal"));
-                user.setEmpComm(rs.getDouble("com"));
-                user.setEmpComm(rs.getInt("deptno"));
-                return user;
+                departmentName.put(rs.getString("dname"),rs.getInt("deptno"));
             }
+            return departmentName;
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -116,4 +107,4 @@ public class EmpDAO {
         System.out.println("错误");
         return null;
     }
-//}
+}

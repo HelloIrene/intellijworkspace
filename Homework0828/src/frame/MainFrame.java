@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class MainFrame extends JFrame {
     private JLabel jLabel;
@@ -33,6 +35,7 @@ public class MainFrame extends JFrame {
 
     private void iniButton() {
         EmpDAO empDAO = new EmpDAO();
+        HashMap<String, Integer> departmentName = empDAO.getDepart();
         jButtonSearch = new JButton("ËÑË÷");
         jButtonSearch.setBounds(285, 24, 90, 28);
         jButtonSearch.addActionListener(new ActionListener() {
@@ -44,6 +47,11 @@ public class MainFrame extends JFrame {
                 jTextFieldDate.setText(String.valueOf(temp.getEmpDate()));
                 jTextFieldSal.setText(String.valueOf(temp.getEmpSal()));
                 jTextFieldComm.setText(String.valueOf(temp.getEmpComm()));
+                for (String getKey : departmentName.keySet()) {
+                    if (departmentName.get(getKey).equals(temp.empDepart)) {
+                        jComboBoxDepart.setSelectedItem(getKey);
+                    }
+                }
             }
         });
         this.add(jButtonSearch);
@@ -58,6 +66,7 @@ public class MainFrame extends JFrame {
                 temp.setEmpJob(jTextFieldWork.getText());
                 temp.setEmpSal(Double.parseDouble(jTextFieldSal.getText()));
                 temp.setEmpComm(Double.parseDouble(jTextFieldComm.getText()));
+                temp.setEmpDepart(departmentName.get(jComboBoxDepart.getSelectedItem()));
                 int back = empDAO.update(temp);
                 if (back != 0) {
                     JOptionPane.showMessageDialog(MainFrame.this, "update success!", "Test", JOptionPane.WARNING_MESSAGE);
@@ -75,7 +84,7 @@ public class MainFrame extends JFrame {
                 int back = empDAO.delete(Integer.parseInt(jTextFieldWorkNo.getText()));
                 if (back != 0) {
                     JOptionPane.showMessageDialog(MainFrame.this, "delete success!", "Test", JOptionPane.WARNING_MESSAGE);
-                }else {
+                } else {
                     JOptionPane.showMessageDialog(MainFrame.this, "delete failed!", "Test", JOptionPane.WARNING_MESSAGE);
                 }
             }
@@ -124,6 +133,8 @@ public class MainFrame extends JFrame {
     }
 
     private void iniJTextField() {
+        EmpDAO tempDAO = new EmpDAO();
+        HashMap<String, Integer> departmentName = tempDAO.getDepart();
         jTextFieldWorkNo = new JTextField("¹¤ºÅ");
         jTextFieldWorkNo.setBounds(60, 25, 200, 23);
         this.add(jTextFieldWorkNo);
@@ -145,6 +156,11 @@ public class MainFrame extends JFrame {
         this.add(jTextFieldComm);
         jComboBoxDepart = new JComboBox();
         jComboBoxDepart.setBounds(275, 157, 110, 20);
+        Iterator iterator = departmentName.entrySet().iterator();
+        while (iterator.hasNext()) {
+            HashMap.Entry strMap = (HashMap.Entry) iterator.next();
+            jComboBoxDepart.addItem(strMap.getKey());
+        }
         this.add(jComboBoxDepart);
     }
 
