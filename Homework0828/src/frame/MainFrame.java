@@ -81,11 +81,15 @@ public class MainFrame extends JFrame {
         jButtonDelete.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int back = empDAO.delete(Integer.parseInt(jTextFieldWorkNo.getText()));
-                if (back != 0) {
-                    JOptionPane.showMessageDialog(MainFrame.this, "delete success!", "Test", JOptionPane.WARNING_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(MainFrame.this, "delete failed!", "Test", JOptionPane.WARNING_MESSAGE);
+                int rst = JOptionPane.showConfirmDialog(MainFrame.this, "È·ÈÏÉ¾³ýÂð£¿", "Warinning",
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (rst == JOptionPane.OK_OPTION) {
+                    int back = empDAO.delete(Integer.parseInt(jTextFieldWorkNo.getText()));
+                    if (back != 0) {
+                        JOptionPane.showMessageDialog(MainFrame.this, "delete success!", "Test", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(MainFrame.this, "delete failed!", "Test", JOptionPane.WARNING_MESSAGE);
+                    }
                 }
             }
         });
